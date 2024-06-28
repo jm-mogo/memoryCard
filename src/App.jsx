@@ -1,35 +1,80 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
+import axios from "axios";
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [results, setResults] = useState([]);
+    const [clickedCards, setClikedCards] = useState([]);
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    useEffect(() => {
+        axios.get("https://rickandmortyapi.com/api/character").then((r) => {
+            setResults(r.data.results);
+        });
+    }, []);
+
+    shuffleArray(results);
+
+    return (
+        <>
+            <h1>Score {clickedCards.length}</h1>
+            <div className="cards">
+                {results.sort().map((r) => (
+                    <Card
+                        key={r.id}
+                        id={r.id}
+                        name={r.name}
+                        url={r.image}
+                        results={results}
+                        setResults={setResults}
+                        clickedCards={clickedCards}
+                        setClikedCards={setClikedCards}
+                    />
+                ))}
+            </div>
+        </>
+    );
 }
 
-export default App
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
+
+function onclick(e, clickedCards, setClikedCards, setResults, results) {
+    const newClickedCards = [...clickedCards];
+    if (newClickedCards.includes(e)) {
+        setClikedCards([]);
+        return;
+    }
+    newClickedCards.push(e);
+    setClikedCards(newClickedCards);
+    setResults(shuffleArray(results));
+}
+
+function Card({
+    id,
+    name,
+    url,
+    clickedCards,
+    setClikedCards,
+    setResults,
+    results,
+}) {
+    return (
+        <div
+            className="card"
+            onClick={(e) => {
+                onclick(id, clickedCards, setClikedCards, setResults);
+            }}
+        >
+            <img className="card-img" src={url}></img>
+            {name}
+        </div>
+    );
+}
+
+export default App;

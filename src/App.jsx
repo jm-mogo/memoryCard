@@ -1,10 +1,23 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import axios from "axios";
+import { motion } from "framer-motion";
+import Card from "./Card.jsx";
+import shuffleArray from "./shuffleArray.jsx";
 
 function App() {
     const [results, setResults] = useState([]);
-    const [clickedCards, setClikedCards] = useState([]);
+    const [score, setScore] = useState([]);
+    const [bestScore, setBestScore] = useState(0);
+
+    if (score.length > bestScore) {
+        setBestScore(score.length);
+    }
+
+    if (score.length == 20) {
+        alert("Ganaste 🎉🎉🎉!!");
+        setScore([]);
+    }
 
     useEffect(() => {
         axios.get("https://rickandmortyapi.com/api/character").then((r) => {
@@ -16,7 +29,8 @@ function App() {
 
     return (
         <>
-            <h1>Score {clickedCards.length}</h1>
+            <h1>Puntos: {score.length}</h1>
+            <h2>Mejor puntaje: {bestScore}</h2>
             <div className="cards">
                 {results.sort().map((r) => (
                     <Card
@@ -24,56 +38,12 @@ function App() {
                         id={r.id}
                         name={r.name}
                         url={r.image}
-                        results={results}
-                        setResults={setResults}
-                        clickedCards={clickedCards}
-                        setClikedCards={setClikedCards}
+                        score={score}
+                        setScore={setScore}
                     />
                 ))}
             </div>
         </>
-    );
-}
-
-function shuffleArray(array) {
-    for (var i = array.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-    }
-}
-
-function onclick(e, clickedCards, setClikedCards, setResults, results) {
-    const newClickedCards = [...clickedCards];
-    if (newClickedCards.includes(e)) {
-        setClikedCards([]);
-        return;
-    }
-    newClickedCards.push(e);
-    setClikedCards(newClickedCards);
-    setResults(shuffleArray(results));
-}
-
-function Card({
-    id,
-    name,
-    url,
-    clickedCards,
-    setClikedCards,
-    setResults,
-    results,
-}) {
-    return (
-        <div
-            className="card"
-            onClick={(e) => {
-                onclick(id, clickedCards, setClikedCards, setResults);
-            }}
-        >
-            <img className="card-img" src={url}></img>
-            {name}
-        </div>
     );
 }
 
